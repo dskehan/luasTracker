@@ -1,0 +1,153 @@
+<style>
+html, body { height: 100%; padding: 0; margin: 0; }
+qsec { width: 50%; height: 50%; float: left; }
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  td:hover {
+      cursor: pointer;
+  } 
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+
+
+  .outBound{
+ color:#A80C1E;
+ display:block;
+ font-size:85px;
+ font-weight:normal;
+ letter-spacing:-3.5px;
+ line-height:1em;
+ }
+
+ .inBound{
+ color:#32a844;
+ display:block;
+ font-size:85px;
+ font-weight:normal;
+ letter-spacing:-3.5px;
+ line-height:1em;
+ }
+</style>
+
+<html>
+<head>
+<body>
+    <div>
+        <qsec id="overallInbound"> 
+            <div class = "inBound" id="mostRecentInbound">
+                <p  id="minutesInbound" style="margin-bottom: 0px; margin-top: 0px;"> </p>
+                <p id="destinationInbound" style="margin-bottom: 0px; margin-top: 0px;"> </p>    
+            </div>
+
+            <div id="nextTramsTableInbound"> 
+                <table id="inBoundTable">
+                    <tr>
+                      <th>Due In</th>
+                      <th>Destination</th>
+                    </tr>
+                  </table>
+            </div>
+
+
+        </qsec>
+
+        <qsec></qsec>
+        <qsec></qsec>
+
+        <qsec id="overallOutbound">
+            <div class = "outBound" id="mostRecentOutbound"> 
+                <p  id="minutesOutbound"  style="margin-bottom: 0px; margin-top: 0px;"> </p>
+                <p id="destinationOutbound"  style="margin-bottom: 0px; margin-top: 0px;"> </p>   
+            </div>   
+
+            <div id="nextTramsTableOutbound"> 
+
+                <table id="outBoundTable">
+                    <tr>
+                      <th>Due In</th>
+                      <th>Destination</th>
+                    </tr>
+                </table>    
+            </div>
+        </qsec>
+
+    </div>
+
+</body>
+</head>
+</html>
+        
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    requestData()
+    setInterval(function() {
+        requestData()
+    }, 30 * 1000)
+   
+    function requestData(){
+        // var newDate = new Date().toLocaleTimeString();
+        // console.log("going to get data " +  newDate)
+        var url = '/getLuasDataJson/'
+        $.get(url, function (data) {
+            setDatatoTables(JSON.parse(data))
+        });
+        return false;
+    }
+
+    function setDatatoTables(obj){
+        inboundData = obj[0]  
+        outboundData = obj[1]
+
+        $("#minutesInbound").text(checkMinutes(inboundData[0].dueMins))
+        $("#destinationInbound").text(inboundData[0].destination)
+        updateTable(inboundData, "#inBoundTable")
+
+        $("#minutesOutbound").text(checkMinutes(outboundData[0].dueMins))
+        $("#destinationOutbound").text(outboundData[0].destination)
+        updateTable(outboundData, "#outBoundTable")
+    }
+
+    function updateTable(tramdata, tableUpdate){
+
+        $(tableUpdate).empty()
+        $(tableUpdate).append("<tr> <th>Due In</th> <th>Destination</th> </tr>")
+
+        for(var i = 1; i < tramdata.length; i++)
+        {
+            var html = "<tr> <td> " + 
+                checkMinutes(tramdata[i].dueMins) + 
+                " </td> <td>" + 
+                    tramdata[i].destination + 
+                "</td> </tr>"    
+
+            $(tableUpdate).append(html)
+        }
+    }
+
+    function checkMinutes(dueMins){
+        var currentMins = ""
+        if(dueMins.toUpperCase() != "DUE")
+        {
+            if(parseInt(dueMins) > 1){
+                currentMins = " Minutes"
+            }
+            else{
+                currentMins = " Minute"
+            } 
+        }
+        return dueMins + currentMins
+    }
+
+</script>
